@@ -286,6 +286,36 @@ section { padding-block: 72px; }
 .pd-img { width: 64px; height: 76px; flex: none; background-size: cover; background-position: 50% 18%; border-bottom: 2px solid var(--orange); }
 .carousel-nav .edit-toggle { width: auto; height: 46px; margin-right: 6px; font-size: .7rem; }
 
+
+/* chart-accurate tree */
+.person small { display: block; }
+.person small.via { color: var(--orange); opacity: .85; }
+.person small.has-note { color: var(--muted); font-style: italic; }
+.unit { position: relative; }
+.unit.group { border-top-color: var(--orange); background: var(--orange); color: var(--bg); padding: 14px 22px; }
+.unit.group .gen-tag { color: var(--bg); opacity: .8; }
+.unit.group .nm { font-family: var(--display); font-weight: 700; font-size: 1.05rem; white-space: normal; text-align: center; }
+.unit.house { border: 1px dashed var(--orange); border-top: 1px dashed var(--orange); background: transparent; min-width: 0; padding: 8px 14px; }
+.unit.house .nm { color: var(--orange); }
+.note-dot { position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: .62rem; font-style: italic; font-weight: 700; color: var(--bg); background: var(--muted); }
+.sib-list { display: grid; gap: 2px; min-width: 190px; padding: 10px 12px 12px; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--orange); text-align: left; }
+.sib-list .gen-tag { margin-bottom: 4px; }
+.sib { position: relative; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 5px 22px 5px 0; border-top: 1px solid var(--line); }
+.sib:first-of-type { border-top: 0; }
+.sib .nm { font-weight: 500; white-space: nowrap; }
+.sib small { color: var(--muted); font-size: .78rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sib .note-dot { top: 50%; translate: 0 -50%; right: 0; }
+.editing .sib[data-id] { cursor: pointer; }
+.editing .sib[data-id]:hover, .editing .sib[data-id]:focus-visible { background: #241f1b; outline: 1px solid var(--orange); }
+.radial.compact { min-width: 900px; max-width: 1100px; }
+.radial.compact .name { font-size: 12px; }
+.radial.compact .name.spoke { font-size: 11px; }
+.radial.compact .halo { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+.radial .node.house circle { fill: var(--bg); stroke-dasharray: 3 3; }
+.radial .node.house .ini { font-size: 10px; }
+.radial .node.group .ini { font-size: 15px; }
+.radial-info .info-note { display: block; margin-top: 6px; font-size: .85rem; font-style: italic; }
+
 /* milestones */
 .timeline { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; border-top: 2px solid var(--orange); }
 .timeline li { position: relative; padding: 28px 20px 0 0; display: grid; gap: 6px; align-content: start; }
@@ -494,7 +524,15 @@ section[id], header[id] { scroll-margin-top: 16px; }
         </label>
         <label class="field">
           <span>Details <em>optional</em></span>
-          <input id="ed-line" autocomplete="off" maxlength="60" placeholder="e.g. Born 2001 or Married 2019">
+          <input id="ed-line" autocomplete="off" maxlength="60" placeholder="e.g. 2001 · ♀, or 2nd wife">
+        </label>
+        <label class="field">
+          <span>Note <em>optional</em></span>
+          <input id="ed-notefield" autocomplete="off" maxlength="300" placeholder="Anything else worth recording">
+        </label>
+        <label class="field" id="ed-kind-field">
+          <span>This entry is</span>
+          <select id="ed-kind"><option value="">A person, or a couple</option><option value="house">A wife, with her children listed under her</option></select>
         </label>
         <p class="ed-error" id="ed-error" role="alert" hidden></p>
 
@@ -578,20 +616,573 @@ section[id], header[id] { scroll-margin-top: 16px; }
    is seen by everyone with access. In a downloaded copy it is kept in this
    browser, starting from the example family below. */
 var EXAMPLE_FAMILY = [
-  { id: 'm-samuel-ruth', names: ['Samuel', 'Ruth'], line: 'Married 1958', parent: '', order: 1 },
-  { id: 'm-daniel-grace', names: ['Daniel', 'Grace'], line: 'Married 1986', parent: 'm-samuel-ruth', order: 1 },
-  { id: 'm-tendai', names: ['Tendai'], line: 'Born 1962', parent: 'm-samuel-ruth', order: 2 },
-  { id: 'm-mercy-peter', names: ['Mercy', 'Peter'], line: 'Married 1991', parent: 'm-samuel-ruth', order: 3 },
-  { id: 'm-chipo', names: ['Chipo'], line: 'Born 1988', parent: 'm-daniel-grace', order: 1 },
-  { id: 'm-james', names: ['James'], line: 'Born 1990', parent: 'm-daniel-grace', order: 2 },
-  { id: 'm-nyasha', names: ['Nyasha'], line: 'Born 1993', parent: 'm-mercy-peter', order: 1 },
-  { id: 'm-anesu', names: ['Anesu'], line: 'Born 1997', parent: 'm-mercy-peter', order: 2 }
+ {
+  "id": "g-family",
+  "names": [
+   "The Jegede-Gomba-Maphosa family"
+  ],
+  "line": "Grand ancestral family",
+  "parent": "",
+  "order": 1,
+  "kind": "group"
+ },
+ {
+  "id": "p-mapurisa",
+  "names": [
+   "Mapurisa (Mapolisa) Mutindivari"
+  ],
+  "line": "",
+  "parent": "g-family",
+  "order": 1,
+  "note": "Married three wives: Porimo Marukatya, Machuma and vaZinhoro."
+ },
+ {
+  "id": "h-porimo",
+  "names": [
+   "Porimo Marukatya"
+  ],
+  "line": "1st wife",
+  "parent": "p-mapurisa",
+  "order": 1,
+  "kind": "house"
+ },
+ {
+  "id": "h-machuma",
+  "names": [
+   "Machuma"
+  ],
+  "line": "2nd wife",
+  "parent": "p-mapurisa",
+  "order": 2,
+  "kind": "house"
+ },
+ {
+  "id": "h-zinhoro",
+  "names": [
+   "vaZinhoro"
+  ],
+  "line": "3rd wife",
+  "parent": "p-mapurisa",
+  "order": 3,
+  "kind": "house"
+ },
+ {
+  "id": "p-naomy",
+  "names": [
+   "Naomy"
+  ],
+  "line": "Brother's wife",
+  "parent": "p-mapurisa",
+  "order": 4,
+  "note": "Drawn hanging from Mapurisa, with a line on to Makake Cufphis & Grace. A second “Naomy ♂” appears beside Elna."
+ },
+ {
+  "id": "p-fayayo",
+  "names": [
+   "Fayayo",
+   "Edna / Musiiwa"
+  ],
+  "line": "",
+  "parent": "h-porimo",
+  "order": 1,
+  "note": "Ndove Fayayo lineage. Notes on the chart: “Fayand's wife (Mankowa)”, “NO Fayand's wife (ManMowa)”, “Married kwa Konbai”."
+ },
+ {
+  "id": "p-ndove",
+  "names": [
+   "Ndove",
+   "Elna"
+  ],
+  "line": "",
+  "parent": "h-porimo",
+  "order": 2,
+  "note": "Ndove Fayayo lineage. Lines from Makake Cufphis and Maghere also run into his box on the chart."
+ },
+ {
+  "id": "p-musiwa",
+  "names": [
+   "Musiwa"
+  ],
+  "line": "",
+  "parent": "h-porimo",
+  "order": 3,
+  "note": "Ndove Fayayo lineage."
+ },
+ {
+  "id": "p-makake",
+  "names": [
+   "Makake Cufphis",
+   "Grace"
+  ],
+  "line": "Married",
+  "parent": "h-porimo",
+  "order": 4,
+  "note": "Lina Zifodya (Tonderai) and Naomy are also joined to his box on the chart."
+ },
+ {
+  "id": "p-mathunia",
+  "names": [
+   "Mathunia"
+  ],
+  "line": "1944 · ♀",
+  "parent": "h-porimo",
+  "order": 5
+ },
+ {
+  "id": "p-maghere",
+  "names": [
+   "Maghere"
+  ],
+  "line": "1944",
+  "parent": "h-porimo",
+  "order": 6
+ },
+ {
+  "id": "p-chikepe",
+  "names": [
+   "Chikepe David"
+  ],
+  "line": "♂",
+  "parent": "h-porimo",
+  "order": 7
+ },
+ {
+  "id": "p-camdori",
+  "names": [
+   "Camdori Vongsi"
+  ],
+  "line": "",
+  "parent": "h-porimo",
+  "order": 8
+ },
+ {
+  "id": "p-lydia",
+  "names": [
+   "Lydia"
+  ],
+  "line": "♂",
+  "parent": "h-porimo",
+  "order": 9
+ },
+ {
+  "id": "p-xabanico",
+  "names": [
+   "Xabanico"
+  ],
+  "line": "1952",
+  "parent": "h-machuma",
+  "order": 1
+ },
+ {
+  "id": "p-pedzrisai",
+  "names": [
+   "Pedzrisai (Tonderai)"
+  ],
+  "line": "1957",
+  "parent": "h-machuma",
+  "order": 2,
+  "note": "Listed with him: Lina Zifodya (Tonderai), and lower down “+ Matashu (Nyengeterai)”. Lines from Jesnica and Elywt also run to his box."
+ },
+ {
+  "id": "p-taki",
+  "names": [
+   "Taki"
+  ],
+  "line": "♀",
+  "parent": "h-zinhoro",
+  "order": 1
+ },
+ {
+  "id": "p-teti",
+  "names": [
+   "Teti"
+  ],
+  "line": "♀",
+  "parent": "h-zinhoro",
+  "order": 2
+ },
+ {
+  "id": "p-mako",
+  "names": [
+   "Mako Simon"
+  ],
+  "line": "",
+  "parent": "h-zinhoro",
+  "order": 3
+ },
+ {
+  "id": "p-rhoda",
+  "names": [
+   "Rhoda"
+  ],
+  "line": "1544 · ♀",
+  "parent": "p-ndove",
+  "order": 1
+ },
+ {
+  "id": "p-mirirai",
+  "names": [
+   "Mirirai"
+  ],
+  "line": "1951 · ♀",
+  "parent": "p-ndove",
+  "order": 2,
+  "note": "Mirirai (1951) is written twice on the chart."
+ },
+ {
+  "id": "p-virginia",
+  "names": [
+   "Virginia Sana"
+  ],
+  "line": "1955",
+  "parent": "p-ndove",
+  "order": 3
+ },
+ {
+  "id": "p-lyton",
+  "names": [
+   "Lyton Fayayo"
+  ],
+  "line": "3958",
+  "parent": "p-ndove",
+  "order": 4
+ },
+ {
+  "id": "p-jesnica",
+  "names": [
+   "Jesnica"
+  ],
+  "line": "2536 · ♀",
+  "parent": "p-ndove",
+  "order": 5,
+  "note": "A line runs from her to Pedzrisai (Tonderai)."
+ },
+ {
+  "id": "p-chrisdom",
+  "names": [
+   "Chrisdom Wisdom"
+  ],
+  "line": "1962",
+  "parent": "p-ndove",
+  "order": 6
+ },
+ {
+  "id": "p-elywt",
+  "names": [
+   "Elywt"
+  ],
+  "line": "1956",
+  "parent": "p-ndove",
+  "order": 7,
+  "note": "A line runs from Elywt to Pedzrisai (Tonderai)."
+ },
+ {
+  "id": "p-samuel",
+  "names": [
+   "Samuel"
+  ],
+  "line": "1962",
+  "parent": "p-ndove",
+  "order": 8
+ },
+ {
+  "id": "p-shrusddet",
+  "names": [
+   "Shrusddet"
+  ],
+  "line": "1962",
+  "parent": "p-ndove",
+  "order": 9
+ },
+ {
+  "id": "p-nolia",
+  "names": [
+   "Nolia"
+  ],
+  "line": "1965 · ♀",
+  "parent": "p-ndove",
+  "order": 10
+ },
+ {
+  "id": "p-diana",
+  "names": [
+   "Diana"
+  ],
+  "line": "1962",
+  "parent": "p-ndove",
+  "order": 11
+ },
+ {
+  "id": "p-michael",
+  "names": [
+   "Michael"
+  ],
+  "line": "1962",
+  "parent": "p-ndove",
+  "order": 12
+ },
+ {
+  "id": "p-girlpaen",
+  "names": [
+   "Girl Paen"
+  ],
+  "line": "",
+  "parent": "p-ndove",
+  "order": 13
+ },
+ {
+  "id": "p-makaita",
+  "names": [
+   "Makaita"
+  ],
+  "line": "",
+  "parent": "p-ndove",
+  "order": 14
+ },
+ {
+  "id": "p-machere",
+  "names": [
+   "Machere Paul"
+  ],
+  "line": "",
+  "parent": "p-girlpaen",
+  "order": 1
+ },
+ {
+  "id": "p-annie",
+  "names": [
+   "Annie"
+  ],
+  "line": "Cephas' wife",
+  "parent": "p-machere",
+  "order": 1,
+  "note": "Numbered ① on the chart, in a box joined to Machere Paul."
+ },
+ {
+  "id": "h-egrence",
+  "names": [
+   "Egrence"
+  ],
+  "line": "",
+  "parent": "p-machere",
+  "order": 2,
+  "note": "A separate line runs from Machere Paul to Egrence, with three numbered names below.",
+  "kind": "house"
+ },
+ {
+  "id": "p-agrens",
+  "names": [
+   "Agrens"
+  ],
+  "line": "1977 · (Caidomyo)",
+  "parent": "h-egrence",
+  "order": 1,
+  "note": "Numbered ② on the chart."
+ },
+ {
+  "id": "p-elvis",
+  "names": [
+   "Elvis Marata"
+  ],
+  "line": "(Chidamnyo)",
+  "parent": "h-egrence",
+  "order": 2,
+  "note": "Numbered ③ on the chart."
+ },
+ {
+  "id": "p-tinomutenda",
+  "names": [
+   "Tinomutenda"
+  ],
+  "line": "(Mberengwa)",
+  "parent": "h-egrence",
+  "order": 3,
+  "note": "Numbered ④ on the chart."
+ },
+ {
+  "id": "p-siphiwe",
+  "names": [
+   "Siphiwe",
+   "Gift Hove"
+  ],
+  "line": "1968 · ♀",
+  "parent": "p-machere",
+  "order": 3,
+  "note": "Joined on the chart to “① Gift Hove = Gift Baba No malles (1965)”. Gift Hove also appears as “Gift Hove – baba Nyasha (1965)” beside Makake Cufphis & Grace, with an arrow marked “Married”."
+ },
+ {
+  "id": "p-pholine",
+  "names": [
+   "Pholine Pasihina"
+  ],
+  "line": "1972 · ♀",
+  "parent": "p-machere",
+  "order": 4
+ },
+ {
+  "id": "p-tapiwa",
+  "names": [
+   "Tapiwa"
+  ],
+  "line": "1973",
+  "parent": "p-machere",
+  "order": 5
+ },
+ {
+  "id": "p-linda",
+  "names": [
+   "Linda"
+  ],
+  "line": "1975",
+  "parent": "p-machere",
+  "order": 6
+ },
+ {
+  "id": "p-lindarachael",
+  "names": [
+   "Linda Rachael"
+  ],
+  "line": "1977",
+  "parent": "p-machere",
+  "order": 7
+ },
+ {
+  "id": "p-tariro",
+  "names": [
+   "Tariro Sithokozile"
+  ],
+  "line": "",
+  "parent": "p-machere",
+  "order": 8
+ },
+ {
+  "id": "p-patriciah",
+  "names": [
+   "Patriciah"
+  ],
+  "line": "1967",
+  "parent": "p-makake",
+  "order": 1
+ },
+ {
+  "id": "p-collen",
+  "names": [
+   "Collen"
+  ],
+  "line": "1909",
+  "parent": "p-makake",
+  "order": 2
+ },
+ {
+  "id": "p-tinesimbo",
+  "names": [
+   "Tinesimbo Phyllis"
+  ],
+  "line": "1972",
+  "parent": "p-makake",
+  "order": 3
+ },
+ {
+  "id": "p-kennedy",
+  "names": [
+   "Kennedy"
+  ],
+  "line": "1974",
+  "parent": "p-makake",
+  "order": 4
+ },
+ {
+  "id": "p-cephas",
+  "names": [
+   "Cephas"
+  ],
+  "line": "1979",
+  "parent": "p-makake",
+  "order": 5,
+  "note": "Annie (Machere Paul's family) is listed as Cephas' wife."
+ },
+ {
+  "id": "p-salafina",
+  "names": [
+   "Salafina Maphosa",
+   "David"
+  ],
+  "line": "",
+  "parent": "g-family",
+  "order": 2,
+  "note": "Joined on the chart by a line from Grace (wife of Makake Cufphis).",
+  "genShift": 1
+ },
+ {
+  "id": "p-chinounge",
+  "names": [
+   "Chinounge"
+  ],
+  "line": "1964",
+  "parent": "p-salafina",
+  "order": 1,
+  "note": "Chart note: “Eustina via Maseko wife”."
+ },
+ {
+  "id": "p-matson",
+  "names": [
+   "Matson"
+  ],
+  "line": "1989",
+  "parent": "p-salafina",
+  "order": 2
+ },
+ {
+  "id": "p-sifile",
+  "names": [
+   "Sifile"
+  ],
+  "line": "♀",
+  "parent": "p-salafina",
+  "order": 3
+ },
+ {
+  "id": "p-sibongile",
+  "names": [
+   "Sibongile"
+  ],
+  "line": "♀",
+  "parent": "p-salafina",
+  "order": 4
+ },
+ {
+  "id": "p-senzeni",
+  "names": [
+   "Senzeni"
+  ],
+  "line": "♀",
+  "parent": "p-salafina",
+  "order": 5
+ },
+ {
+  "id": "p-reason",
+  "names": [
+   "Reason"
+  ],
+  "line": "♀",
+  "parent": "p-salafina",
+  "order": 6
+ },
+ {
+  "id": "p-lastina",
+  "names": [
+   "Lastina"
+  ],
+  "line": "♀",
+  "parent": "p-salafina",
+  "order": 7
+ }
 ];
 
 (function () {
   var GEN_NAMES = ['The roots', 'The trunk', 'The branches', 'The leaves', 'The buds'];
   var ORDINALS = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth'];
-  var LOCAL_KEY = 'family-members-v1';
+  var LOCAL_KEY = 'family-members-v2';
 
   var members = {};        // id -> member
   var ready = false;       // first data has arrived
@@ -603,7 +1194,13 @@ var EXAMPLE_FAMILY = [
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function label(u) { return u.names.join(' & '); }
-  function initials(u) { return u.names.map(function (n) { return (n.trim()[0] || '?').toUpperCase(); }).join(u.names.length > 1 ? '+' : ''); }
+  function isPerson(u) { return !u.kind; }
+  function initials(u) {
+    if (u.kind === 'group') { var m = u.names[0].match(/[A-Za-z]+(?:-[A-Za-z]+)+/); return m ? m[0].split('-').map(function (w) { return w[0].toUpperCase(); }).join('') : (u.names[0][0] || '?').toUpperCase(); }
+    return u.names.map(function (n) { return (n.trim()[0] || '?').toUpperCase(); }).join(u.names.length > 1 ? '+' : '');
+  }
+  function houseOf(u) { return u.parent && u.parent.kind === 'house' ? u.parent : null; }
+  function viaText(u) { var h = houseOf(u); return h ? (h.line ? h.line.charAt(0).toUpperCase() + h.line.slice(1) + ': ' : 'Via ') + label(h) : ''; }
   function genName(d) { return GEN_NAMES[d] || ('Generation ' + (d + 1)); }
   function genOrdinal(d) { return (ORDINALS[d] || ((d + 1) + 'th')) + ' generation'; }
 
@@ -618,15 +1215,18 @@ var EXAMPLE_FAMILY = [
     // anyone whose parent is missing is treated as a root too
     list.forEach(function (m) { if (m.parent && !members[m.parent] && roots.indexOf(m) < 0) roots.push(m); });
     var seen = {};
-    function node(m, depth, parent) {
+    // depth = position in the drawing; gen = generation, counting people only (wives' households and the family title don't add one)
+    function node(m, depth, parent, baseGen) {
       seen[m.id] = true;
-      var u = { id: m.id, names: m.names.slice(), line: m.line || '', depth: depth, parent: parent, children: [] };
-      sort(byParent[m.id] || []).forEach(function (c) { if (!seen[c.id]) u.children.push(node(c, depth + 1, u)); });
+      var u = { id: m.id, names: m.names.slice(), line: m.line || '', note: m.note || '', kind: m.kind || '', depth: depth, parent: parent, children: [] };
+      var nextGen = baseGen;
+      if (!u.kind) { u.gen = baseGen + (Number(m.genShift) || 0); nextGen = u.gen + 1; }
+      sort(byParent[m.id] || []).forEach(function (c) { if (!seen[c.id]) u.children.push(node(c, depth + 1, u, nextGen)); });
       return u;
     }
-    var top = node(roots[0], 0, null);
+    var top = node(roots[0], 0, null, 0);
     // extra roots (rare) hang under the first so nothing is lost from view
-    roots.slice(1).forEach(function (r) { if (!seen[r.id]) { var n = node(r, 1, top); top.children.push(n); } });
+    roots.slice(1).forEach(function (r) { if (!seen[r.id]) { var n = node(r, 1, top, top.kind ? 0 : 1); top.children.push(n); } });
     return top;
   }
   function walk(u, fn) { fn(u); u.children.forEach(function (c) { walk(c, fn); }); }
@@ -658,11 +1258,14 @@ var EXAMPLE_FAMILY = [
     var box = $('view-list');
     if (!tree) { box.innerHTML = ''; return; }
     var rows = [];
-    walk(tree, function (u) { (rows[u.depth] = rows[u.depth] || []).push(u); });
+    walk(tree, function (u) { if (isPerson(u)) (rows[u.gen] = rows[u.gen] || []).push(u); });
     box.innerHTML = rows.map(function (row, d) {
-      return '<div class="gen"><div class="gen-label"><strong>' + esc(genName(d)) + '</strong><span>' + esc(genOrdinal(d)) + '</span></div><div class="people">' +
+      if (!row) return '';
+      return '<div class="gen"><div class="gen-label"><strong>' + esc(genName(d)) + '</strong><span>' + esc(genOrdinal(d)) + ' · ' + row.length + '</span></div><div class="people">' +
         row.map(function (u) {
-          return '<div class="person"' + personAttrs(u) + '><span class="ini">' + esc(initials(u)) + '</span><div><b>' + esc(label(u)) + '</b><small>' + esc(u.line) + '</small></div></div>';
+          var via = viaText(u), title = [via, u.note].filter(Boolean).join(' — ');
+          return '<div class="person"' + personAttrs(u) + (title ? ' title="' + esc(title) + '"' : '') + '><span class="ini">' + esc(initials(u)) + '</span><div><b>' + esc(label(u)) + '</b>' +
+            (u.line ? '<small>' + esc(u.line) + '</small>' : '') + (via ? '<small class="via">' + esc(via) + '</small>' : '') + (u.note ? '<small class="has-note">Chart note</small>' : '') + '</div></div>';
         }).join('') + '</div></div>';
     }).join('');
   }
@@ -670,10 +1273,28 @@ var EXAMPLE_FAMILY = [
   function renderClassic(tree) {
     var ul = $('ftree');
     if (!tree) { ul.innerHTML = ''; return; }
-    function item(u) {
+    function box(u) {
+      if (u.kind === 'group') return '<div class="unit group"' + personAttrs(u) + '><span class="gen-tag">' + esc(u.line || 'Family') + '</span><span class="pair"><span class="nm">' + esc(label(u)) + '</span></span></div>';
+      if (u.kind === 'house') return '<div class="unit house"' + personAttrs(u) + (u.note ? ' title="' + esc(u.note) + '"' : '') + '><span class="pair"><span class="nm">' + esc(label(u)) + '</span></span>' + (u.line ? '<small>' + esc(u.line) + '</small>' : '') + '</div>';
       var pair = u.names.map(function (n) { return '<span class="nm">' + esc(n) + '</span>'; }).join('<i class="wed" aria-label="married to"></i>');
-      var h = '<li><div class="unit"' + personAttrs(u) + '><span class="gen-tag">' + esc(genName(u.depth)) + '</span><span class="pair">' + pair + '</span><small>' + esc(u.line) + '</small></div>';
-      if (u.children.length) h += '<ul>' + u.children.map(item).join('') + '</ul>';
+      return '<div class="unit"' + personAttrs(u) + (u.note ? ' title="' + esc(u.note) + '"' : '') + '><span class="gen-tag">' + esc(genName(u.gen)) + '</span><span class="pair">' + pair + '</span>' +
+        (u.line ? '<small>' + esc(u.line) + '</small>' : '') + (u.note ? '<span class="note-dot" aria-label="Has a chart note">i</span>' : '') + '</div>';
+    }
+    function item(u) {
+      var h = '<li>' + box(u);
+      if (u.children.length) {
+        var leaves = u.children.filter(function (c) { return !c.children.length && !c.kind; });
+        var grouped = leaves.length > 2;
+        var parts = [];
+        if (grouped) {
+          parts.push('<li><div class="sib-list"><span class="gen-tag">' + esc(genName(leaves[0].gen)) + ' · ' + leaves.length + '</span>' +
+            leaves.map(function (c) {
+              return '<div class="sib"' + personAttrs(c) + (c.note ? ' title="' + esc(c.note) + '"' : '') + '><span class="nm">' + esc(label(c)) + '</span>' + (c.line ? '<small>' + esc(c.line) + '</small>' : '') + (c.note ? '<span class="note-dot" aria-hidden="true">i</span>' : '') + '</div>';
+            }).join('') + '</div></li>');
+        }
+        u.children.forEach(function (c) { if (!grouped || leaves.indexOf(c) < 0) parts.push(item(c)); });
+        h += '<ul>' + parts.join('') + '</ul>';
+      }
       return h + '</li>';
     }
     ul.innerHTML = item(tree);
@@ -699,6 +1320,7 @@ var EXAMPLE_FAMILY = [
     svg.classList.add('tracing');
     var info = '<b>' + esc(label(u)) + '</b>' + (u.line ? ' · ' + esc(u.line) : '');
     info += u.parent ? ' · ' + chain.slice(1).map(function (c) { return esc(label(c)); }).join(' → ') : ' · where the tree begins';
+    if (u.note) info += '<span class="info-note">' + esc(u.note) + '</span>';
     $('radial-info').innerHTML = info;
   }
 
@@ -708,41 +1330,55 @@ var EXAMPLE_FAMILY = [
     if (!tree) return;
     var maxDepth = 0, leaves = [];
     walk(tree, function (u) { maxDepth = Math.max(maxDepth, u.depth); if (!u.children.length) leaves.push(u); });
-    var OUTER = 300, step = maxDepth ? OUTER / maxDepth : 0;
-    var radius = function (d) { return d * step; };
+    var compact = leaves.length > 14;
+    svg.classList.toggle('compact', compact);
+    var OUTER = compact ? Math.max(300, leaves.length * 6.4) : 300;
+    var step = maxDepth ? OUTER / maxDepth : 0;
+    // compact: rings spread on a square-root scale so the busy centre gets room
+    var radius = compact ? function (d) { return maxDepth ? OUTER * 0.92 * Math.sqrt(d / maxDepth) : 0; } : function (d) { return d * step; };
+    var S = OUTER + (compact ? 190 : 170);
+    svg.setAttribute('viewBox', (-S) + ' ' + (compact ? -S : -350) + ' ' + (2 * S) + ' ' + (compact ? 2 * S : 700));
     var slot = 360 / leaves.length;
     leaves.forEach(function (u, i) { u.angle = -90 + slot / 2 + i * slot; });
     (function place(u) {
       if (u.children.length) { u.children.forEach(place); u.angle = u.children.reduce(function (s, c) { return s + c.angle; }, 0) / u.children.length; }
-      var p = polar(radius(u.depth), u.angle); u.x = p[0]; u.y = p[1];
+      u.r = compact && !u.children.length && u.depth > 0 ? OUTER : radius(u.depth);
+      var p = polar(u.r, u.angle); u.x = p[0]; u.y = p[1];
     })(tree);
 
-    for (var d = 1; d <= maxDepth; d++) {
-      el('circle', { class: 'ring', r: radius(d) });
-      el('text', { class: 'ring-label', x: 0, y: -radius(d) - 10, 'text-anchor': 'middle' }).textContent = genName(d);
-    }
+    for (var d = 1; d <= maxDepth; d++) el('circle', { class: 'ring', r: radius(d) });
     walk(tree, function (u) {
       allNodes.push(u);
       if (!u.parent) return;
-      var p = u.parent, rm = (radius(p.depth) + radius(u.depth)) / 2;
+      var p = u.parent, rm = (p.r + u.r) / 2;
       var c1 = polar(rm, p.depth === 0 ? u.angle : p.angle), c2 = polar(rm, u.angle);
-      u.link = el('path', { class: 'link', d: 'M' + p.x + ',' + p.y + ' C' + c1 + ' ' + c2 + ' ' + u.x + ',' + u.y });
+      u.link = el('path', { class: 'link' + (u.kind === 'house' ? ' to-house' : ''), d: 'M' + p.x + ',' + p.y + ' C' + c1 + ' ' + c2 + ' ' + u.x + ',' + u.y });
     });
     allNodes.forEach(function (u) {
-      var g = el('g', { class: 'node' + (u.depth === 0 ? ' root' : ''), tabindex: 0, role: 'button', 'data-id': u.id,
+      var cls = 'node' + (u.depth === 0 ? ' root' : '') + (u.kind ? ' ' + u.kind : '') + (!u.children.length ? ' leaf' : '');
+      var g = el('g', { class: cls, tabindex: 0, role: 'button', 'data-id': u.id,
                         'aria-label': (editing ? 'Edit ' : '') + label(u) + (u.line ? ', ' + u.line : ''), transform: 'translate(' + u.x + ',' + u.y + ')' });
-      var R = u.depth === 0 ? 40 : 28;
+      var R = u.depth === 0 ? (compact ? 34 : 40) : (compact ? (u.kind === 'house' ? 13 : 10) : 28);
       el('circle', { r: R }, g);
-      el('text', { class: 'ini' }, g).textContent = initials(u);
+      if (!compact || u.depth === 0 || u.kind === 'house') el('text', { class: 'ini' }, g).textContent = u.kind === 'house' ? 'W' : initials(u);
       var cos = Math.cos(u.angle * Math.PI / 180), sin = Math.sin(u.angle * Math.PI / 180), lx, ly, anchor;
-      if (u.depth === 0) { lx = 0; ly = -R - 32; anchor = 'middle'; }
-      else {
-        anchor = cos > 0.35 ? 'start' : cos < -0.35 ? 'end' : 'middle';
-        lx = (cos > 0 ? 1 : -1) * (R + 12); ly = -2;
-        if (anchor === 'middle') { lx = 0; ly = sin > 0 ? R + 22 : -R - 26; }
+      if (compact && u.depth > 0 && !u.children.length) {
+        // outer ring: names run outward along the spoke
+        var flip = cos < 0, rot = flip ? u.angle + 180 : u.angle;
+        var t1 = el('text', { class: 'name spoke', x: flip ? -(R + 6) : R + 6, y: 4, 'text-anchor': flip ? 'end' : 'start', transform: 'rotate(' + rot + ')' }, g);
+        t1.textContent = label(u) + (u.line ? '  ' + u.line : '');
+      } else {
+        if (u.depth === 0 && compact) { u.g = g; g.addEventListener('pointerenter', function () { trace(u); }); g.addEventListener('focus', function () { trace(u); }); return; }
+        if (u.depth === 0) { lx = 0; ly = -R - 32; anchor = 'middle'; }
+        else if (compact) { lx = 0; ly = R + 14; anchor = 'middle'; }
+        else {
+          anchor = cos > 0.35 ? 'start' : cos < -0.35 ? 'end' : 'middle';
+          lx = (cos > 0 ? 1 : -1) * (R + 12); ly = -2;
+          if (anchor === 'middle') { lx = 0; ly = sin > 0 ? R + 22 : -R - 26; }
+        }
+        el('text', { class: 'name' + (compact ? ' halo' : ''), x: lx, y: ly, 'text-anchor': anchor }, g).textContent = label(u);
+        if (u.line && !compact) el('text', { class: 'sub', x: lx, y: ly + 17, 'text-anchor': anchor }, g).textContent = u.line;
       }
-      el('text', { class: 'name', x: lx, y: ly, 'text-anchor': anchor }, g).textContent = label(u);
-      if (u.line) el('text', { class: 'sub', x: lx, y: ly + 17, 'text-anchor': anchor }, g).textContent = u.line;
       u.g = g;
       g.addEventListener('pointerenter', function () { trace(u); });
       g.addEventListener('focus', function () { trace(u); });
@@ -896,7 +1532,7 @@ var EXAMPLE_FAMILY = [
   }
   function fillParents(selected) {
     var tree = buildTree(), opts = [];
-    if (tree) walk(tree, function (u) { opts.push('<option value="' + esc(u.id) + '">' + esc(new Array(u.depth + 1).join('— ') + label(u)) + '</option>'); });
+    if (tree) walk(tree, function (u) { opts.push('<option value="' + esc(u.id) + '">' + esc(new Array(u.depth + 1).join('— ') + label(u) + (u.kind === 'house' && u.line ? ' (' + u.line + ')' : '')) + '</option>'); });
     $('ed-parent').innerHTML = opts.join('');
     $('ed-parent').value = selected;
   }
@@ -911,10 +1547,14 @@ var EXAMPLE_FAMILY = [
     var parentName = opts.parent && members[opts.parent] ? label(members[opts.parent]) : '';
     if (m) {
       $('ed-title').textContent = 'Edit ' + label(m);
-      $('ed-sub').textContent = m.parent && members[m.parent] ? 'Child of ' + label(members[m.parent]) : 'At the root of the tree';
+      var par = m.parent && members[m.parent];
+      $('ed-sub').textContent = m.kind === 'group' ? 'The title at the top of the tree' : m.kind === 'house' ? (par ? 'Wife of ' + label(par) : '') : par ? (par.kind === 'house' ? 'Child of ' + label(par) + (par.line ? ' (' + par.line + ')' : '') : par.kind === 'group' ? 'At the top of the tree' : 'Child of ' + label(par)) : 'At the root of the tree';
       $('ed-name').value = m.names[0] || '';
       $('ed-partner').value = m.names[1] || '';
       $('ed-line').value = m.line || '';
+      $('ed-notefield').value = m.note || '';
+      $('ed-kind').value = m.kind === 'house' ? 'house' : '';
+      $('ed-kind-field').hidden = m.kind === 'group';
       $('ed-parent-field').hidden = true;
       $('ed-save').textContent = 'Save changes';
       $('ed-addchild').hidden = false;
@@ -926,7 +1566,7 @@ var EXAMPLE_FAMILY = [
       var isFirst = !Object.keys(members).length;
       $('ed-title').textContent = isFirst ? 'Add the first family member' : 'Add a family member';
       $('ed-sub').textContent = isFirst ? 'They will sit at the root of the tree. Add a partner here if they were a couple.' : (parentName ? 'They will be added as a child of ' + parentName + '.' : '');
-      $('ed-name').value = ''; $('ed-partner').value = ''; $('ed-line').value = '';
+      $('ed-name').value = ''; $('ed-partner').value = ''; $('ed-line').value = ''; $('ed-notefield').value = ''; $('ed-kind').value = ''; $('ed-kind-field').hidden = false;
       $('ed-parent-field').hidden = isFirst;
       if (!isFirst) fillParents(opts.parent);
       $('ed-save').textContent = 'Add to the tree';
@@ -963,18 +1603,20 @@ var EXAMPLE_FAMILY = [
     e.preventDefault();
     if (!current) return;
     var name = $('ed-name').value.trim(), partner = $('ed-partner').value.trim(), line = $('ed-line').value.trim();
+    var note = $('ed-notefield').value.trim(), kindSel = $('ed-kind').value;
     if (!name) { showError('Enter a name.'); $('ed-name').focus(); return; }
     var names = partner ? [name, partner] : [name];
     var body, msg;
     if (current.kind === 'edit') {
       var old = members[current.id]; if (!old) { closeEditor(); return; }
-      body = { id: old.id, names: names, line: line, parent: old.parent || '', order: old.order || 0 };
+      body = { id: old.id, names: names, line: line, parent: old.parent || '', order: old.order || 0, note: note,
+               kind: old.kind === 'group' ? 'group' : kindSel, genShift: old.genShift || 0 };
       msg = 'Saved ' + label(body);
     } else {
       var isFirst = !Object.keys(members).length;
       var parent = isFirst ? '' : $('ed-parent').value;
       if (!isFirst && !members[parent]) { showError('Choose who they are a child of.'); return; }
-      body = { id: 'm-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), names: names, line: line, parent: parent, order: Date.now() };
+      body = { id: 'm-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), names: names, line: line, parent: parent, order: Date.now(), note: note, kind: kindSel, genShift: 0 };
       msg = 'Added ' + label(body);
     }
     busy(true);
@@ -1004,7 +1646,7 @@ var EXAMPLE_FAMILY = [
   /* ---- storage: shared store on the published page, this browser otherwise ---- */
   var store = {
     save: function (m) {
-      if (mode === 'shared') return dbCol.doc(m.id).set({ names: m.names, line: m.line, parent: m.parent, order: m.order });
+      if (mode === 'shared') return dbCol.doc(m.id).set({ names: m.names, line: m.line, parent: m.parent, order: m.order, note: m.note || '', kind: m.kind || '', genShift: m.genShift || 0 });
       members[m.id] = m; saveLocal(); render(); return Promise.resolve();
     },
     remove: function (id) {
@@ -1034,7 +1676,8 @@ var EXAMPLE_FAMILY = [
         var b = d.data() || {};
         var names = Array.isArray(b.names) ? b.names.filter(function (n) { return typeof n === 'string' && n.trim(); }).slice(0, 2) : [];
         if (!names.length) return;
-        next[d.id] = { id: d.id, names: names, line: typeof b.line === 'string' ? b.line : '', parent: typeof b.parent === 'string' ? b.parent : '', order: Number(b.order) || 0 };
+        next[d.id] = { id: d.id, names: names, line: typeof b.line === 'string' ? b.line : '', parent: typeof b.parent === 'string' ? b.parent : '', order: Number(b.order) || 0,
+                       note: typeof b.note === 'string' ? b.note : '', kind: b.kind === 'house' || b.kind === 'group' ? b.kind : '', genShift: Number(b.genShift) || 0 };
       });
       members = next; ready = true; render();
     }, function () {
