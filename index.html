@@ -189,9 +189,9 @@ section { padding-block: 72px; }
 }
 
 /* classic family tree: boxes joined by drop lines */
-.tree-scroll { overflow-x: auto; padding-block: 8px 16px; }
+
 .ftree, .ftree ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; }
-.ftree { width: max-content; min-width: 100%; }
+.ftree { width: max-content; padding: 8px; }
 .ftree ul { position: relative; padding-top: 28px; }
 .ftree ul::before { content: ""; position: absolute; top: 0; left: 50%; height: 28px; border-left: 2px solid var(--orange); }
 .ftree li { position: relative; display: flex; flex-direction: column; align-items: center; padding: 28px 10px 0; }
@@ -212,8 +212,8 @@ section { padding-block: 72px; }
 .unit .gen-tag { font-family: var(--display); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--orange); }
 
 /* modern radial tree */
-.radial-scroll { overflow-x: auto; }
-.radial { display: block; width: 100%; min-width: 560px; max-width: 860px; margin: 0 auto; height: auto; font-family: var(--body); }
+
+.radial { display: block; font-family: var(--body); }
 .radial .ring { fill: none; stroke: var(--line); stroke-dasharray: 3 7; }
 .radial .ring-label { fill: var(--muted); font-family: var(--display); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
 .radial .link { fill: none; stroke: var(--line); stroke-width: 2; transition: stroke .3s, stroke-width .3s; }
@@ -307,7 +307,7 @@ section { padding-block: 72px; }
 .sib .note-dot { top: 50%; translate: 0 -50%; right: 0; }
 .editing .sib[data-id] { cursor: pointer; }
 .editing .sib[data-id]:hover, .editing .sib[data-id]:focus-visible { background: #241f1b; outline: 1px solid var(--orange); }
-.radial.compact { min-width: 900px; max-width: 1100px; }
+
 .radial.compact .name { font-size: 12px; }
 .radial.compact .name.spoke { font-size: 11px; }
 .radial.compact .halo { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
@@ -315,6 +315,23 @@ section { padding-block: 72px; }
 .radial .node.house .ini { font-size: 10px; }
 .radial .node.group .ini { font-size: 15px; }
 .radial-info .info-note { display: block; margin-top: 6px; font-size: .85rem; font-style: italic; }
+
+
+/* zoomable tree frames: always fit the width, zoom and drag instead of scrolling sideways */
+.zoom { position: relative; overflow: hidden; width: 100%; touch-action: pan-y; user-select: none; -webkit-user-select: none; border: 1px solid var(--line); background: var(--bg); transition: height .25s ease; }
+.zoom.zoomed { touch-action: none; cursor: grab; }
+.zoom.dragging { cursor: grabbing; }
+.zoom.dragging * { cursor: grabbing !important; }
+.zoom-content { position: absolute; left: 0; top: 0; transform-origin: 0 0; width: max-content; will-change: transform; }
+.zoom.animate .zoom-content { transition: transform .25s ease; }
+.zoom-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.zoom-hint { color: var(--muted); font-size: .8rem; }
+.zoom-btns { display: flex; border: 1px solid var(--orange); margin-left: auto; }
+.zb { appearance: none; border: 0; background: transparent; color: var(--orange); cursor: pointer; min-width: 44px; height: 40px; padding: 0 12px; font-family: var(--display); font-size: .95rem; font-variant-numeric: tabular-nums; }
+.zb + .zb { border-left: 1px solid var(--orange); }
+.zb:hover { background: var(--orange); color: var(--bg); }
+.zb-pct { font-size: .7rem; letter-spacing: .04em; min-width: 64px; }
+@media (prefers-reduced-motion: reduce) { .zoom, .zoom.animate .zoom-content { transition: none; } }
 
 /* milestones */
 .timeline { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; border-top: 2px solid var(--orange); }
@@ -346,7 +363,7 @@ footer em { font-family: var(--display); font-style: normal; font-weight: 500; c
   .cards { grid-template-columns: repeat(2, 1fr); }
   .gen { grid-template-columns: 1fr; gap: 12px; }
 }
-@media (max-width: 700px) { .view-hint { display: block; } }
+
 @media (prefers-reduced-motion: reduce) { .fam-view > * { animation: none !important; } .track { scroll-behavior: auto; } }
 @media (max-width: 480px) {
   .stats { grid-template-columns: repeat(3, 1fr); gap: 14px; }
@@ -417,30 +434,17 @@ section[id], header[id] { scroll-margin-top: 16px; }
 
 <div class="wrap">
   <nav class="nav" aria-label="Main">
-    <a class="brand" href="#top"><span class="logo" role="img" aria-label="Family tree emblem"></span>Our Family</a>
+    <a class="brand" href="#about"><span class="logo" role="img" aria-label="Family tree emblem"></span>Our Family Tree</a>
     <ul>
-      <li><a href="#moments">Moments</a></li>
       <li><a href="#about">About us</a></li>
-      <li><a href="#family">Family</a></li>
+      <li><a href="#moments">Moments</a></li>
+      <li><a href="#family">Family tree</a></li>
       <li><a href="#meet">Meet us</a></li>
+      <li><a href="#milestones">Milestones</a></li>
       <li><a href="#gatherings">Gatherings</a></li>
     </ul>
   </nav>
 
-  <header class="hero" id="top">
-    <div class="collage">
-      <div class="photo p1 pic ph-read" role="img" aria-label="A mother reading with her son and daughter"></div>
-      <div class="photo p2 pic ph-trio" role="img" aria-label="A father with his two grown daughters"></div>
-      <div class="photo p3 pic ph-hug" role="img" aria-label="Parents hugging their little girl"></div>
-      <h1 class="word w1">FAMI<span class="o">LY</span></h1>
-      <p class="word w2" aria-hidden="true">RO<span class="o">OTED</span></p>
-      <p class="word w3" aria-hidden="true">TOGE<span class="o">THER</span></p>
-    </div>
-    <div class="hero-sub">
-      <p>A home for our stories, our people and the days we gather. Wherever the branches have reached, this is where we come back to.</p>
-      <span class="note">Example names, dates and photo slots · replace with your own</span>
-    </div>
-  </header>
 
   <section id="about">
     <div class="about">
@@ -496,13 +500,14 @@ section[id], header[id] { scroll-margin-top: 16px; }
 
     <!-- View 2: classic family tree -->
     <div class="fam-view" id="view-tree" hidden>
-      <div class="tree-scroll"><ul class="ftree" id="ftree"></ul></div>
-      <p class="view-hint">Scroll sideways on a small screen to see the whole tree.</p>
+      <div class="zoom-bar" data-for="zoom-tree"><span class="zoom-hint">Pinch, Ctrl + scroll or use the buttons to zoom. Drag to move around.</span><div class="zoom-btns"><button type="button" class="zb" data-act="out" aria-label="Zoom out">&#8722;</button><button type="button" class="zb zb-pct" data-act="fit" aria-label="Fit the whole tree">Fit</button><button type="button" class="zb" data-act="in" aria-label="Zoom in">+</button></div></div>
+      <div class="zoom" id="zoom-tree"><div class="zoom-content"><ul class="ftree" id="ftree"></ul></div></div>
     </div>
 
     <!-- View 3: modern radial tree -->
     <div class="fam-view" id="view-modern" hidden>
-      <div class="radial-scroll"><svg class="radial" id="radial" viewBox="-470 -350 940 700" role="img" aria-label="Radial family tree with the oldest generation at the centre and each younger generation on a ring further out"></svg></div>
+      <div class="zoom-bar" data-for="zoom-radial"><span class="zoom-hint">Pinch, Ctrl + scroll or use the buttons to zoom. Drag to move around.</span><div class="zoom-btns"><button type="button" class="zb" data-act="out" aria-label="Zoom out">&#8722;</button><button type="button" class="zb zb-pct" data-act="fit" aria-label="Fit the whole tree">Fit</button><button type="button" class="zb" data-act="in" aria-label="Zoom in">+</button></div></div>
+      <div class="zoom" id="zoom-radial"><div class="zoom-content"><svg class="radial" id="radial" viewBox="-470 -350 940 700" role="img" aria-label="Radial family tree with the oldest generation at the centre and each younger generation on a ring further out"></svg></div></div>
       <p class="radial-info" id="radial-info" aria-live="polite">Tap or hover anyone to trace their line back to the roots.</p>
     </div>
 
@@ -602,7 +607,7 @@ section[id], header[id] { scroll-margin-top: 16px; }
   </section>
 
   <footer>
-    <span class="brand"><span class="logo" role="img" aria-label="Family emblem"></span>Our Family</span>
+    <span class="brand"><span class="logo" role="img" aria-label="Family emblem"></span>Our Family Tree</span>
     <em>Rooted together since 1958</em>
   </footer>
 </div>
@@ -1243,6 +1248,7 @@ var EXAMPLE_FAMILY = [
     } else status.hidden = true;
 
     renderList(tree); renderClassic(tree); renderRadial(tree); renderMeet();
+    if (typeof refitZoom === 'function') refitZoom();
     $('family').classList.toggle('editing', editing);
     $('edit-toggle').hidden = !canWrite || !ready;
     $('edit-toggle').setAttribute('aria-pressed', String(editing));
@@ -1338,6 +1344,7 @@ var EXAMPLE_FAMILY = [
     var radius = compact ? function (d) { return maxDepth ? OUTER * 0.92 * Math.sqrt(d / maxDepth) : 0; } : function (d) { return d * step; };
     var S = OUTER + (compact ? 190 : 170);
     svg.setAttribute('viewBox', (-S) + ' ' + (compact ? -S : -350) + ' ' + (2 * S) + ' ' + (compact ? 2 * S : 700));
+    svg.setAttribute('width', 2 * S); svg.setAttribute('height', compact ? 2 * S : 700);
     var slot = 360 / leaves.length;
     leaves.forEach(function (u, i) { u.angle = -90 + slot / 2 + i * slot; });
     (function place(u) {
@@ -1497,6 +1504,123 @@ var EXAMPLE_FAMILY = [
     if (e.key === 'ArrowRight') { e.preventDefault(); goTo(currentIndex() + 1); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(currentIndex() - 1); }
   });
+
+
+  /* ---- zoom frames for the two tree views ---- */
+  function Zoomer(frame) {
+    var content = frame.querySelector('.zoom-content');
+    var bar = document.querySelector('.zoom-bar[data-for="' + frame.id + '"]');
+    var pct = bar.querySelector('.zb-pct');
+    var s = 1, x = 0, y = 0, fit = 1, w = 0, h = 0, MAX = 3;
+    var pointers = {}, start = null, moved = false, suppressClick = false;
+
+    function frameH() {
+      var fitH = h * fit;
+      if (s <= fit + 1e-3) return fitH;
+      return Math.min(h * s, Math.max(fitH, window.innerHeight * 0.75));
+    }
+    function clamp() {
+      var fw = frame.clientWidth, fh = frame.clientHeight, cw = w * s, ch = h * s;
+      x = cw <= fw ? (fw - cw) / 2 : Math.min(0, Math.max(fw - cw, x));
+      y = ch <= fh ? (fh - ch) / 2 : Math.min(0, Math.max(fh - ch, y));
+    }
+    function apply(animate) {
+      frame.classList.toggle('animate', !!animate);
+      frame.classList.toggle('zoomed', s > fit + 1e-3);
+      frame.style.height = Math.ceil(frameH()) + 'px';
+      clamp();
+      content.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+      pct.textContent = s > fit + 1e-3 ? Math.round(s / fit * 100) + '%' : 'Fit';
+    }
+    function measure() {
+      if (!frame.offsetParent) return false;   // view is hidden
+      w = content.offsetWidth; h = content.offsetHeight;
+      fit = w ? Math.min(1, frame.clientWidth / w) : 1;
+      return true;
+    }
+    function refit(animate) { if (!measure()) return; s = fit; x = 0; y = 0; apply(animate); }
+    function zoomAt(ns, cx, cy, animate) {
+      ns = Math.max(fit, Math.min(MAX, ns));
+      var r = frame.getBoundingClientRect(); cx -= r.left; cy -= r.top;
+      var px = (cx - x) / s, py = (cy - y) / s;
+      s = ns;
+      frame.style.height = Math.ceil(frameH()) + 'px';
+      x = cx - px * s; y = cy - py * s;
+      apply(animate);
+    }
+    function centre() { var r = frame.getBoundingClientRect(); return [r.left + r.width / 2, r.top + Math.min(r.height, window.innerHeight) / 2]; }
+
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-act]'); if (!b) return;
+      if (!measure()) return;
+      var c = centre();
+      if (b.dataset.act === 'in') zoomAt(s * 1.5, c[0], c[1], true);
+      else if (b.dataset.act === 'out') zoomAt(s / 1.5, c[0], c[1], true);
+      else refit(true);
+    });
+    frame.addEventListener('wheel', function (e) {
+      if (!e.ctrlKey && !e.metaKey) return;   // plain scrolling still scrolls the page
+      e.preventDefault();
+      zoomAt(s * Math.exp(-e.deltaY * 0.01), e.clientX, e.clientY, false);
+    }, { passive: false });
+    frame.addEventListener('dblclick', function (e) {
+      if (editing) return;
+      zoomAt(s > fit * 2.5 ? fit : s * 2, e.clientX, e.clientY, true);
+    });
+
+    frame.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(pointers);
+      moved = false;
+      if (ids.length === 1) start = { x: e.clientX, y: e.clientY, ox: x, oy: y };
+      if (ids.length === 2) {
+        var a = pointers[ids[0]], b2 = pointers[ids[1]];
+        start = { pinch: Math.hypot(a.x - b2.x, a.y - b2.y), s: s };
+        frame.classList.add('zoomed');   // stop the browser panning the page during a pinch
+      }
+    });
+    frame.addEventListener('pointermove', function (e) {
+      if (!pointers[e.pointerId] || !start) return;
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(pointers);
+      if (ids.length >= 2 && start.pinch) {
+        var a = pointers[ids[0]], b2 = pointers[ids[1]];
+        var d = Math.hypot(a.x - b2.x, a.y - b2.y);
+        zoomAt(start.s * d / start.pinch, (a.x + b2.x) / 2, (a.y + b2.y) / 2, false);
+        moved = true; return;
+      }
+      if (s <= fit + 1e-3 || start.pinch) return;   // nothing to pan at fit
+      var dx = e.clientX - start.x, dy = e.clientY - start.y;
+      if (!moved && Math.hypot(dx, dy) < 6) return;
+      if (!moved) { moved = true; try { frame.setPointerCapture(e.pointerId); } catch (err) {} }
+      frame.classList.add('dragging');
+      x = start.ox + dx; y = start.oy + dy; apply(false);
+    });
+    function end(e) {
+      delete pointers[e.pointerId];
+      if (!Object.keys(pointers).length) {
+        if (moved) suppressClick = true;
+        start = null; frame.classList.remove('dragging'); apply(false);
+      } else if (start && start.pinch) {
+        var id = Object.keys(pointers)[0], p = pointers[id];
+        start = { x: p.x, y: p.y, ox: x, oy: y };
+      }
+    }
+    frame.addEventListener('pointerup', end);
+    frame.addEventListener('pointercancel', end);
+    // a drag should not also count as a tap on a person
+    frame.addEventListener('click', function (e) { if (suppressClick) { suppressClick = false; e.stopPropagation(); e.preventDefault(); } }, true);
+
+    var rt;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () { var was = s <= fit + 1e-3; if (!measure()) return; if (was) { s = fit; } else { s = Math.max(s, fit); } apply(false); }, 120);
+    });
+    return { refit: refit };
+  }
+  var zoomTree = Zoomer($('zoom-tree')), zoomRadial = Zoomer($('zoom-radial'));
+  function refitZoom() { requestAnimationFrame(function () { zoomTree.refit(false); zoomRadial.refit(false); }); }
 
   /* ---- clicking a person: trace in the modern view, edit when editing ---- */
   function nodeFor(id) { for (var i = 0; i < allNodes.length; i++) if (allNodes[i].id === id) return allNodes[i]; return null; }
@@ -1705,6 +1829,7 @@ var EXAMPLE_FAMILY = [
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.view === name)); });
     try { localStorage.setItem('family-view', name); } catch (e) {}
     window.dispatchEvent(new Event('resize'));
+    refitZoom();
   }
   buttons.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.view); }); });
   var savedView = null;
